@@ -1,0 +1,12 @@
+<div class="chat-container">
+    <div class="messages">
+        <div *ngFor="let msg of chatService.messages" class="message">
+            {{ msg }}
+        </div>
+    </div>
+    <div class="input-area">
+        <input [(ngModel)]="sender" placeholder="你的名字" />
+        <input [(ngModel)]="message" placeholder="输入消息" />
+        <button (click)="sendMessage()">发送</button>
+    </div>
+</div>

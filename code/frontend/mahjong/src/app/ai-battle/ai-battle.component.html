@@ -1,0 +1,64 @@
+<div class="game-container">
+
+    <div *ngIf="winner">
+        <h2>{{ winner }} 胜利！</h2>
+    </div>
+
+    <div class="ai-area">
+        <h3>对手</h3>
+        <p>血量: {{ aiHealth }}</p>
+        <div class="cards">
+            <div *ngFor="let card of aiCards" class="card">
+
+            </div>
+        </div>
+    </div>
+
+    <!-- 对手牌河区域 -->
+    <div class="river-area">
+        <h3>对手牌河</h3>
+        <div class="river-cards">
+            <div *ngFor="let card of aiRiverCards" class="card">
+                <img [src]="getCardImage(card)" alt="{{ card }}" />
+            </div>
+        </div>
+    </div>
+
+    <!-- 我的牌河区域 -->
+    <div class="river-area">
+        <h3>玩家牌河</h3>
+        <div class="river-cards">
+            <div *ngFor="let card of playerRiverCards" class="card">
+                <img [src]="getCardImage(card)" alt="{{ card }}" />
+            </div>
+        </div>
+    </div>
+
+    <!-- 在输出牌的时候,能不能使用图片? -->
+    <div class="player-area">
+        <h3>玩家</h3>
+        <p>血量: {{ playerHealth }}</p>
+        <div class="cards">
+            <div *ngFor="let card of playerCards; let i = index" class="card" (dblclick)="playCard(i)">
+                <img [src]="getCardImage(card)" alt="{{ card }}" />
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="deck">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; gap:20px">
+            <div *ngIf="deck.length > 0">
+                <button (click)="drawCard()">抽牌</button>
+            </div>
+            <div *ngIf="deck.length > 0">
+                <button (click)="winCard()">胡牌</button>
+            </div>
+        </div>
+
+        <p>剩余牌数: {{ deck.length }}</p>
+    </div>
+</div>
+
+

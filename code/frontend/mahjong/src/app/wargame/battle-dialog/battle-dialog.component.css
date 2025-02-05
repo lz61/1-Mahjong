@@ -1,0 +1,18 @@
+h2 {
+    font-size: 24px;
+    color: #333;
+}
+
+div {
+    padding: 20px;
+}
+
+p {
+    font-size: 18px;
+}
+
+button {
+    margin-top: 20px;
+    background-color: #4CAF50;
+    color: white;
+}

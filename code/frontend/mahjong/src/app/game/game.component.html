@@ -1,0 +1,24 @@
+<!-- 值得记录的内容: 如何让侧边栏在多个页面中持续显示 -->
+<mat-sidenav-container class="sidenav-container">
+    <!-- 侧边栏 -->
+    <mat-sidenav mode="side" opened>
+        <mat-toolbar>游戏模式</mat-toolbar>
+        <mat-nav-list>
+            <mat-list-item>
+                <button mat-button [routerLink]="['/game/ai-battle']" routerLinkActive="active">人机对战</button>
+            </mat-list-item>
+            <mat-list-item>
+                <button mat-button [routerLink]="['/game/player-battle']" routerLinkActive="active">人人对战</button>
+            </mat-list-item>
+        </mat-nav-list>
+    </mat-sidenav>
+
+    <!-- 主内容 -->
+    <mat-sidenav-content>
+        <mat-toolbar color="primary">麻将对战</mat-toolbar>
+        <div class="main-content">
+            <router-outlet></router-outlet>
+        </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>
+

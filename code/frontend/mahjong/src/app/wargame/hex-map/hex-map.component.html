@@ -1,0 +1,93 @@
+<!-- 侧边栏 -->
+
+<div [ngClass]="{ 'sidebar-open': isSidebarOpen, 'sidebar-closed': !isSidebarOpen }" class="sidebar">
+    <br>
+    <button (click)="saveUnitsToFile()">保存兵种到文件</button>
+    <!-- 加载兵种的按钮 -->
+    <div style="margin-top: 10px;">
+        <button (click)="fileInput.click()">加载兵种</button>
+        <input #fileInput type="file" (change)="loadUnitsFromFile($event)" accept=".json" style="display: none;" />
+    </div>
+
+    <div class="sidebar-content">
+        <!-- 显示玩家单位列表 -->
+
+        <!-- 显示玩家金币 -->
+        <div class="player-info">
+            <h3>玩家信息</h3>
+            <p>可用金币: {{ playerMoney }}</p>
+            <p>回合: {{ currentTurn === 'player' ? '玩家回合' : 'AI 回合' }}</p>
+            <p>回合数: {{turnCount}}</p>
+        </div>
+    </div>
+</div>
+
+<!-- 将领,顶层栏 -->
+<div
+    style="position: fixed; top: 0; left: 0; right: 0; background-color: #f4f4f4; border-bottom: 2px solid #ccc; padding: 4px;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10%;">
+        <div *ngFor="let general of generals" style="text-align: center;">
+            <img [src]="general.image" alt="{{ general.name }}"
+                style="width: 50px; height: 45px; border-radius: 50%; cursor: pointer;"
+                (mouseenter)="showGeneralSkill(general,$event)"
+                (mouseleave)="hideGeneralSkill()"
+                 />
+            <div style="font-size: 12px; font-weight: bold;">
+                {{ general.name }}
+            </div>
+            <div style="font-size: 20px; font-weight: bold; ">
+                {{ general.skillDescription }}
+            </div>
+        </div>
+    </div>
+    <!-- <div *ngIf="hoveredGeneral" [ngStyle]="tooltipStyle"
+        style="position: absolute; background: #fff; border: 1px solid #ccc; padding: 100px; z-index: 9999;">
+        <p style="margin: 0; font-size: 20px; z-index: 9999;">{{ hoveredGeneral.skillDescription }}</p>
+    </div> -->
+</div>
+
+<!-- 限制六边形地图的大小 -->
+<svg [attr.width]="mapWidth" [attr.height]="mapHeight" 
+    style="border: 1px solid black"
+    style="position: absolute; left: 20%; top: 10%;">
+    <g *ngFor="let hex of hexagons">
+        <polygon [attr.points]="getHexagonPoints(hex)" stroke="black" 
+        stroke-width="1" fill="gray"
+            (click)="onHexClick(hex)" [ngStyle]="{ fill: hex.color }">
+        </polygon>
+        <image *ngIf="hex.unit" [attr.x]="hex.x - hex.size / 2" 
+        [attr.y]="hex.y - hex.size / 2"
+            [attr.width]="hex.size " [attr.height]="hex.size " [attr.href]="hex.unit.image"
+            (click)="onHexClick(hex)">
+        </image>
+
+        <!-- 显示血量条 -->
+        <rect *ngIf="this.hex.unit" [attr.x]="hex.x - hex.size / 2" [attr.y]="hex.y - hex.size / 2 - 8"
+            [attr.width]="(this.hex.unit.health / this.hex.unit.maxHealth) * hex.size" height="5"
+            [attr.fill]="getHealthBarColor(this.hex.unit.health, this.hex.unit.maxHealth)">
+        </rect>
+        <!-- 显示阵营颜色 -->
+        <circle *ngIf="this.hex.unit&&this.hex.unit?.camp " [attr.cx]="hex.x"
+            [attr.cy]="hex.y + hex.size / 2 + 10" r="5"
+            [attr.fill]="this.hex.unit.camp === playerCamp ? playerCampColor : aiCampColor">
+        </circle>
+        <!-- 显示兵种血量 -->
+        <text *ngIf="this.hex.unit" [attr.x]="hex.x" [attr.y]="hex.y + hex.size / 2" font-size="12"
+            text-anchor="middle" fill="red">
+            {{ this.hex.unit.health }}
+        </text>
+    </g>
+</svg>
+
+<audio id="background-music" autoplay loop>
+    <source src="assets/music/background-music.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+<div class="controls" style="position: fixed; bottom: 20px; right: 200px;">
+    <button (click)="toggleMusic()">🎵 {{ isMusicPlaying ? '暂停音乐' : '播放音乐' }}</button>
+</div>
+
+<div class="controls" style="position: fixed; bottom: 20px; right: 20px;">
+    <button (click)="endPlayerTurn()">结束回合</button>
+</div>
+

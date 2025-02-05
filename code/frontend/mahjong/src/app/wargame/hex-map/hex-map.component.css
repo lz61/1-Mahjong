@@ -1,0 +1,107 @@
+/* src/app/hex-map/hex-map.component.css */
+svg {
+    /* 动态由ts文件决定 */
+    /* width: 300%; */
+    /* height: 300%; */
+    /* 这里修改大小已经没效果了,提醒下一周或者一个月后的李增 */
+    background-color: #11e418;
+    fill: gray;
+}
+
+.controls button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.controls button:hover {
+    background-color: #0056b3;
+}
+
+.current-turn {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.city-info {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 10px;
+    padding: 2px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+/* 侧边栏样式 */
+.sidebar {
+    position: fixed;
+    top: 10%;
+    left: 0;
+    height: 90%;
+    width: 20%;
+    background-color: #333;
+    color: white;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+    transform: translateX(-100%);
+}
+
+/* 侧边栏打开时 */
+.sidebar-open {
+    transform: translateX(0);
+}
+
+/* 侧边栏关闭时 */
+.sidebar-closed {
+    transform: translateX(-100%);
+}
+
+/* 侧边栏按钮 */
+.sidebar-toggle-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: #444;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+}
+
+/* 侧边栏内容 */
+.sidebar-content {
+    padding: 20px;
+}
+
+.unit-list {
+    margin-bottom: 20px;
+}
+
+.unit-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.unit-item img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.player-info {
+    margin-top: 20px;
+}
+
+/* 控制按钮的样式 */
+.controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}

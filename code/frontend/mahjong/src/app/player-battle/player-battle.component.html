@@ -1,0 +1,72 @@
+<!-- 改变: 页面组织结构而非接收消息结构-否则太乱了 -->
+<div class="game-container">
+    <!-- 由WebSocket发给大家 -->
+    <h3>玩家名:{{playerName}}</h3>
+    <h3>当前出牌方:{{currentPlayer}}</h3>
+
+    <div class="ai-area">
+        <h3>对手</h3>
+        <p>血量: {{ opponentHealth }}</p>
+        <div class="cards">
+            <div *ngFor="let card of opponentCards" class="card">
+            <img [src]="getCardImage(card)" alt="{{ card }}" />
+            </div>
+        </div>
+    </div>
+
+    <!-- 对手牌河区域 -->
+    <div class="river-area">
+        <h3>对手牌河</h3>
+        <div class="river-cards">
+            <div *ngFor="let card of opponentRiverCards" class="card">
+                <img [src]="getCardImage(card)" alt="{{ card }}" />
+            </div>
+        </div>
+    </div>
+
+    <!-- 我的牌河区域 -->
+    <div class="river-area">
+        <h3>玩家牌河</h3>
+        <div class="river-cards">
+            <div *ngFor="let card of playerRiverCards" class="card">
+                <img [src]="getCardImage(card)" alt="{{ card }}" />
+            </div>
+        </div>
+    </div>
+
+    <!-- 在输出牌的时候,能不能使用图片? -->
+    <div class="player-area">
+        <h3>玩家</h3>
+        <p>血量: {{ playerHealth }}</p>
+        <div class="cards">
+            <div *ngFor="let card of playerCards; let i = index" class="card" (dblclick)="playCard(i)">
+                <img [src]="getCardImage(card)" alt="{{ card }}" />
+            </div>
+        </div>
+    </div>
+
+
+    <!-- deck与服务器deck保持同步即可 -->
+    <div class="deck">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; gap:20px">
+            <button (click)="drawCard()">抽牌</button>
+            <button (click)="winCard()">胡牌</button>
+        </div>
+
+        <!-- <p>剩余牌数: {{ deck.length }}</p> -->
+    </div>
+</div>
+
+<h1 justify-content:center>玩家聊天室</h1>
+<div class="chat-container">
+
+    <div class="messages">
+        <div *ngFor="let msg of chatService.messages" class="message">
+            {{ msg }}
+        </div>
+    </div>
+    <!-- <div class="input-area">
+        <input [(ngModel)]="message" placeholder="输入消息" />
+        <button (click)="sendMessage()">发送</button>
+    </div> -->
+</div>
