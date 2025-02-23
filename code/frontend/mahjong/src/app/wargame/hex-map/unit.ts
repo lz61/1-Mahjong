@@ -10,6 +10,8 @@ export class Unit {
     attackUpperLimit: number;
     attackLowerLimit: number;
     counterAttackChance: number=0.3;
+    attackBoost: number = 0; // 攻击力加成
+    healthBoost: number = 0; // 血量加成
     // hasActed: boolean = false // 是否已行动
     hasMoved: boolean = false; // 是否已移动
     hasAttacked: boolean = false; // 是否已攻击
@@ -26,29 +28,34 @@ export class Unit {
         counterAttackChance: number = 0.3,
         attackRange: number = 1,
         hasMoved: boolean = false,
-        hasAttacked: boolean = false) {
+        hasAttacked: boolean = false,
+        attackBoost: number = 0,
+        healthBoost: number = 0) {
         this.movementSpeed = movementSpeed;
         this.image = image;
-        this.health = health; 
-        this.maxHealth = maxHealth; 
+        this.health = Math.floor(health); 
+        this.maxHealth = Math.floor(maxHealth); 
         this.camp = camp; 
         this.attackUpperLimit = attackUpper;
         this.attackLowerLimit = attackLower;
         this.counterAttackChance = counterAttackChance;
         this.attackRange = attackRange;
+        this.attackBoost = attackBoost;
+        this.healthBoost = healthBoost;
     }
 
     // 创建正常的骑兵对象
-    static createNormalCavalry(): Unit {
+    static createNormalCavalry(camp:string = this.playerCamp): Unit {
         return new Unit(3, "assets/Car.png",
-            100, 100, this.playerCamp, 10, 5, 0.3);
+            100, 100, camp, 10, 5, 0.3);
     }
 
     // 创建正常的步兵对象
-    static createNormalInfantry(camp:string): Unit {
+    static createNormalInfantry(camp:string,boost:number =1): Unit {
         // Infantry move speed: 2
-        return new Unit(2, "assets/Infantry.png",
-            100, 100, camp, 10, 5, 0.3,1);
+        return new Unit(
+            2, "assets/Infantry.png",
+            (100*boost), (100*boost), camp, 10*boost, 5*boost, 0.3,1);
     }
 
     // 反击逻辑

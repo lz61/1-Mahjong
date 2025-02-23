@@ -2,22 +2,37 @@
 
 <div [ngClass]="{ 'sidebar-open': isSidebarOpen, 'sidebar-closed': !isSidebarOpen }" class="sidebar">
     <br>
-    <button (click)="saveUnitsToFile()">保存兵种到文件</button>
+    <button (click)="tellThingsAboutGame()">游戏说明</button>
+    <br>
+    <br>
+    <button (click)="saveUnitsToFile()">存档</button>
     <!-- 加载兵种的按钮 -->
     <div style="margin-top: 10px;">
-        <button (click)="fileInput.click()">加载兵种</button>
+        <button (click)="fileInput.click()">读档</button>
         <input #fileInput type="file" (change)="loadUnitsFromFile($event)" accept=".json" style="display: none;" />
     </div>
+
+    <p>作弊内容</p>
+    <input type="text" [(ngModel)]="inputValue" (keydown)="onKeyDown($event)" placeholder="输入内容">
+    <p>你输入的内容是: {{ inputValue }}</p>
 
     <div class="sidebar-content">
         <!-- 显示玩家单位列表 -->
 
-        <!-- 显示玩家金币 -->
+        <!-- 显示玩家信息 -->
         <div class="player-info">
             <h3>玩家信息</h3>
-            <p>可用金币: {{ playerMoney }}</p>
-            <p>回合: {{ currentTurn === 'player' ? '玩家回合' : 'AI 回合' }}</p>
-            <p>回合数: {{turnCount}}</p>
+            <p>可用于购买将领的钞票: {{ playerMoney }}</p>
+            <br>
+
+            <!-- <p>回合: {{ currentTurn === 'player' ? '玩家回合' : 'AI 回合' }}</p> -->
+            <p>当前回合/总回合数: {{turnCount}}/{{totalTurnCount}}</p>
+        </div>
+
+        <!-- 显示当前所处小关 -->
+        <div class="player-info">
+            <h3>当前所处关卡</h3>
+            <p>关卡:{{bigRound}}-{{littleRound}}</p>
         </div>
     </div>
 </div>

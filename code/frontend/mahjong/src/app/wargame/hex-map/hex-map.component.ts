@@ -3,6 +3,7 @@ import { City, Hexagon } from './hexagon';
 import { Unit } from './unit';
 import { MatDialog } from '@angular/material/dialog';
 import { BattleDialogComponent } from '../battle-dialog/battle-dialog.component';
+import { guderian } from './general';
 
 @Component({
   selector: 'app-hex-map',
@@ -21,36 +22,30 @@ export class HexMapComponent implements OnInit {
   currentTurn: 'player' | 'ai' = 'player'; // 当前回合，默认为玩家回合
   playerCamp = Unit.playerCamp;
   aiCamp = Unit.aiCamp;
-  playerMoney: number = 1000;
+  playerMoney: number = 5;
   playerCampColor = 'black';
   aiCampColor = 'white';
   mapWidthMagFac = 0.8;
   mapHeightMagFac = 0.9;
-  turnCount=1;
+  littleRound = 1;
+  bigRound = 1;
+  turnCount = 1;
+  totalTurnCount = 5;
 
   generals = [
-    { name: 'guderian', image: 'assets/generals/guderian.png',
-  skillDescription: 'Tanks add 1 attack per turn' },
-    { name: 'rommel', image: 'assets/generals/rommel.png',
-  skillDescription: 'Tank add 3 attack at first turn' },
-    {
-      name: 'manstein', image: 'assets/generals/manstein.png',
-      skillDescription: 'Tank add 10 attack at last turn'
-    },
+    guderian,
+  //   { name: 'rommel', image: 'assets/generals/rommel.png',
+  // skillDescription: 'Tank add 3 attack at first turn' },
+  //   {
+  //     name: 'manstein', image: 'assets/generals/manstein.png',
+  //     skillDescription: 'Tank add 10 attack at last turn'
+  //   },
   ];
+  tellThingsAboutGame(){
+    console.log("正在施工中......"); 
+  }
   // 控制侧边栏的开关
   isSidebarOpen = true;
-
-  // 切换侧边栏的显示状态
-  toggleSidebar() {
-    this.isSidebarOpen = !this.isSidebarOpen;
-  }
-
-  hoveredGeneral: any = null; // 当前悬停的将领
-  tooltipStyle = { top: '0px', left: '0px',width:'0px' }; // 提示框位置
-
-  activeGeneral: any = null; // 当前显示技能的将领
-
   ngOnInit(): void {
     this.updateMapSize(); // 初始化时更新地图大小
     const row = this.mapWidth / (this.hexSize);
@@ -67,7 +62,25 @@ export class HexMapComponent implements OnInit {
     // 失败条件
     // 在开始战斗时弹出对话框
     this.openBattleDialog();
+    this.startPlayerTurn(); 
   }
+
+  checkGeneralEffect(){
+    // 对于每个将军,调用其增益技能
+    
+  }
+
+  // 切换侧边栏的显示状态
+  toggleSidebar() {
+    this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  hoveredGeneral: any = null; // 当前悬停的将领
+  tooltipStyle = { top: '0px', left: '0px',width:'0px' }; // 提示框位置
+
+  activeGeneral: any = null; // 当前显示技能的将领
+
+
 
   openBattleDialog() {
     this.dialog.open(BattleDialogComponent);
@@ -94,7 +107,6 @@ export class HexMapComponent implements OnInit {
 
   constructor(private dialog: MatDialog) { }
 
-  // 更新玩家金钱
   updatePlayerMoney(amount: number): void {
     this.playerMoney += amount;
     console.log(`玩家金钱更新: 当前金钱数为 ${this.playerMoney}`);
@@ -122,13 +134,23 @@ export class HexMapComponent implements OnInit {
     return hexList;
   }
 
-  getAvailableUnits(): Hexagon[] {
+  getAvailablePlayerUnits(): Hexagon[] {
     return this.hexagons.filter((hex) => hex.unit && hex.unit.camp === Unit.playerCamp && (!hex.unit.hasMoved || hex.unit.canAttack));
+  }
+
+  getPlayerUnits():Unit[]{
+    var hexList = this.hexagons.filter((hex) => hex.unit && hex.unit.camp === Unit.playerCamp)
+    var unitList:Unit[] = [];
+    for(let hex of hexList){
+      if(hex.unit)
+        unitList.push(hex.unit);
+    }
+    return unitList;
   }
 
 
   highlightAvailableUnits(): void {
-    const availableUnits = this.getAvailableUnits();
+    const availableUnits = this.getAvailablePlayerUnits();
     for (const hex of availableUnits) {
       if (!hex.unit?.hasMoved) {
         hex.color = 'yellow'; // 高亮可移动单位
@@ -303,6 +325,7 @@ export class HexMapComponent implements OnInit {
           console.log(`Unit at (${hex.x}, ${hex.y}) died.`);
           hex.unit = null;
           // 如果被攻击单位死亡，则进攻方的攻击状态重置
+          // 无限动大神
           this.selectedHex.unit.hasAttacked = false;
         } else {
           // 如果被攻击单位未死亡，则尝试反击
@@ -386,6 +409,61 @@ export class HexMapComponent implements OnInit {
     return null;
   }
 
+  // 最好是通过存档文件初始化,现在有点sb
+  // 读取小关与大关的数据,boost=(大关-1)*0.1+(小关-1)*0.07+1
+  // boss战会很难打
+  initAICamp(rows: number, cols: number): void {
+    var boost = (this.bigRound-1)*0.1 + (this.littleRound-1)*0.07+1;
+    var unit = null;
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        if(row == 4 && col == 1){
+          unit = Unit.createNormalInfantry(Unit.aiCamp,boost);
+          var hexagon = this.getHexagon(row * 2 * this.hexSize * 3 / 2 + this.hexSize*3/2, col * (Math.sqrt(3) * this.hexSize) +(Math.sqrt(3) * this.hexSize)/2);
+          if(hexagon !== null)
+            hexagon.unit = unit;
+        }
+        if(row == 5 && col == 1){
+          unit = Unit.createNormalInfantry(Unit.aiCamp,boost);
+          var hexagon = this.getHexagon(row * 2 * this.hexSize * 3 / 2 + this.hexSize*3/2, col * (Math.sqrt(3) * this.hexSize) +(Math.sqrt(3) * this.hexSize)/2);
+          if(hexagon !== null)
+            hexagon.unit = unit;
+        }
+          
+      }
+    }
+  }
+
+  // 部署我方阵营(以后应该改成玩家自选)
+  initPlayerCamp(rows: number, cols: number): void {
+    var unit = null;
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        if (row == 1 && col == 1) {
+          unit = Unit.createNormalCavalry();
+          var hexagon = this.getHexagon(row * 2 * this.hexSize * 3 / 2 + this.hexSize * 3 / 2, col * (Math.sqrt(3) * this.hexSize) + (Math.sqrt(3) * this.hexSize) / 2);
+          if (hexagon !== null)
+            hexagon.unit = unit;
+        }
+        if (row == 3 && col == 6) {
+          unit = Unit.createNormalCavalry();
+          var hexagon = this.getHexagon(row * 2 * this.hexSize * 3 / 2 + this.hexSize * 3 / 2, col * (Math.sqrt(3) * this.hexSize) + (Math.sqrt(3) * this.hexSize) / 2);
+          if (hexagon !== null)
+            hexagon.unit = unit;
+        }
+
+      }
+    }
+  }
+
+  rowAndColToXY(row:number, col:number): {x:number,y:number}{
+    const hexWidth = 2* this.hexSize; // 六边形的宽度
+    const hexHeight = Math.sqrt(3) * this.hexSize; // 六边形的高度
+    var x:number = row * hexWidth*3/2;
+    var y:number = col * (hexHeight); // 行之间的垂直间距
+    return {x:x,y:y};
+  }
+
   generateHexMap(rows: number, cols: number): void {
     const hexWidth = 2* this.hexSize; // 六边形的宽度
     const hexHeight = Math.sqrt(3) * this.hexSize; // 六边形的高度
@@ -396,40 +474,38 @@ export class HexMapComponent implements OnInit {
     for (let row = 0; row < rows; row++) {
       for(let col = 0; col < cols; col++) {
         // if (row == 0 || col == 0 || row == rows - 1 || col == cols - 1) continue;
-        var x = row * hexWidth*3/2;
-        var y = col * (hexHeight); // 行之间的垂直间距
+        var result = this.rowAndColToXY(row,col);
+        var x = result.x;
+        var y = result.y;
         var unit = null;
         if(row==1 && col==1 || row ==3 && col ==6 || row == 4 && col == 1 || row == 5 && col == 1){
-          
-          if(row==1 && col==1){
-            unit = Unit.createNormalCavalry();
-          }
-          else if(row ==3 && col ==6){
-            unit = Unit.createNormalCavalry();
-          }
-          else if(row == 4 && col == 1){
-            unit = Unit.createNormalInfantry(Unit.aiCamp);
-          }
-          // 再来一个unit
-          else if(row == 5 && col == 1){
-            unit = Unit.createNormalInfantry(Unit.aiCamp);
-          }
-
-          
-
+          // if(row==1 && col==1){
+          //   unit = Unit.createNormalCavalry();
+          // }
+          // else if(row ==3 && col ==6){
+          //   unit = Unit.createNormalCavalry();
+          // }
+          // else if(row == 4 && col == 1){
+          //   unit = Unit.createNormalInfantry(Unit.aiCamp);
+          // }
+          // // 再来一个unit
+          // else if(row == 5 && col == 1){
+          //   unit = Unit.createNormalInfantry(Unit.aiCamp);
+          // }
           
           const hexagon = new Hexagon(x, y, this.hexSize,this.hexagonColor,unit);
           this.hexagons.push(hexagon);
           continue;
         }
         // 初始化城市
-        let city = null;
-        if (row === 2 && col === 3) {
-          city = new City('Capital','capital',3,100,100,cityImage,this.playerCamp);
-        } else if (row === 6 && col === 8) {
-          city = new City('Village','village',1, 50,100,cityImage,this.aiCamp);
-        }
-        const hexagon = new Hexagon(x, y, this.hexSize,this.hexagonColor,unit,city);
+        // let city = null;
+        // if (row === 2 && col === 3) {
+        //   city = new City('Capital','capital',3,100,100,cityImage,this.playerCamp);
+        // } else if (row === 6 && col === 8) {
+        //   city = new City('Village','village',1, 50,100,cityImage,this.aiCamp);
+        // }
+        // city暂时不添加
+        const hexagon = new Hexagon(x, y, this.hexSize,this.hexagonColor,unit,null);
         this.hexagons.push(hexagon);
       }
     }
@@ -443,7 +519,8 @@ export class HexMapComponent implements OnInit {
         this.hexagons.push(hexagon);
       }
     }
-
+    this.initAICamp(rows,cols);
+    this.initPlayerCamp(rows,cols);
   }
 
   saveUnitsToFile() {
@@ -535,6 +612,68 @@ export class HexMapComponent implements OnInit {
     return vertices.map(v => `${v[0]},${v[1]}`).join(' ');
   }
 
+  inputValue: string = ''; // 输入框的值
+
+  // 作弊方法: 玩家输入w直接进入下一关
+  // 处理键盘事件的函数
+  onKeyDown(event: KeyboardEvent) {
+    // 检查是否按下了Ctrl + W
+    if (event.key === 'w') {
+      // 调用框架的某个函数，这里简单打印一条消息作为示例
+      // 判断是不是完全获胜
+      if(!this.judgePlayerAllWin()){
+        // 进入商店
+        this.enterShop();
+        // 进入下一关
+        this.enterNextLevel();
+        // 阻止默认行为
+        event.preventDefault();
+      }
+    }
+  }
+
+  enterShop(){
+    // 待完成,将页面主要内容更改为购买将领或单位的页面
+
+  }
+
+  enterNextLevel(){
+    // 结束游戏
+    alert('本轮游戏结束，玩家胜利。进入下一轮游戏');
+
+    // 挺进一小关
+    this.littleRound++;
+    // 小关: 只有1-3
+    if(this.littleRound > 3){
+      this.littleRound = 1;
+      this.bigRound++;
+    }
+    // 部署地图上的敌方兵种
+    for (let hexagon of this.hexagons) {
+      hexagon.unit = null;
+    }
+
+    // 部署敌方兵种
+    this.initAICamp(10,10);
+
+    // 部署我方兵种(目前为默认部署,2骑兵)
+
+
+    // 重新开始游戏
+    // window.location.reload();
+  }
+
+  judgePlayerAllWin():Boolean{
+    // 如果8-3到了,则判定玩家获胜!
+    if (this.bigRound === 8 && this.littleRound === 3) {
+      alert('恭喜玩家获胜!关卡已结束,退出以开始新的剧本');
+      alert("新的剧本制作中......");
+      window.location.reload();
+      return true;
+    }
+    return false;
+  }
+
   // 玩家回合结束
   endPlayerTurn(): void {
     // 如果有选中的单位,让其取消选中
@@ -573,6 +712,20 @@ export class HexMapComponent implements OnInit {
 
     this.turnCount++;
     // 如果超过指定回合数(目前为5),则结束游戏并宣布玩家失败
+
+    // 如果所有的AI单位都被消灭,则玩家获胜
+    let isPlayerWin = true;
+    for (let hexagon of this.hexagons) {
+      if(hexagon.unit && hexagon.unit.camp === Unit.aiCamp){
+        isPlayerWin = false;
+        break;
+      }
+    }
+
+    if(isPlayerWin){
+      if(!this.judgePlayerAllWin())
+        this.enterNextLevel();
+    }
 
     if(this.turnCount > 5){
       // 结束游戏
@@ -650,11 +803,12 @@ export class HexMapComponent implements OnInit {
       }
     }
 
-    if (!attacked) {
-      console.log(`AI 单位 (${hex.x}, ${hex.y}) 没有找到可攻击的玩家单位。`);
-      // 如果没有找到可以攻击的玩家单位，则随机移动
-      this.aiMoveRandom(hex);
-    }
+    // AI单位默认不动,活靶子
+    // if (!attacked) {
+    //   console.log(`AI 单位 (${hex.x}, ${hex.y}) 没有找到可攻击的玩家单位。`);
+    //   // 如果没有找到可以攻击的玩家单位，则随机移动
+    //   this.aiMoveRandom(hex);
+    // }
   }
 
   // 代码有问题
@@ -708,18 +862,26 @@ export class HexMapComponent implements OnInit {
   }
 
   startPlayerTurn(): void {
-    let playerIncome = 0;
+    // let playerIncome = 0;
 
-    // 遍历所有地块，计算当前玩家拥有的城市数量
-    for (let hex of this.hexagons) {
-      if (hex.city && hex.city.camp === this.playerCamp) {
-        playerIncome += hex.city.levelToIncome[hex.city.level];
-      }
-    }
+    // // 遍历所有地块，计算当前玩家拥有的城市数量
+    // for (let hex of this.hexagons) {
+    //   if (hex.city && hex.city.camp === this.playerCamp) {
+    //     playerIncome += hex.city.levelToIncome[hex.city.level];
+    //   }
+    // }
+
 
     // 每个城市为玩家产钱（例如每座城市产 10 金币）
-    this.playerMoney += playerIncome;
+    // this.playerMoney += playerIncome;
 
+    // 每个将军发出技能
+    var dict = new Map<string,any>();
+    
+    dict.set("units", this.getPlayerUnits());
+    for(let general of this.generals){
+      general.useSkill(dict);
+    }
     this.highlightAvailableUnits();
   }
 

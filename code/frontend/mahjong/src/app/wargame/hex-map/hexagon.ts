@@ -8,11 +8,7 @@ export class City {
     population?: number; // 可选，城市人口
     image: string|null; // 城市图片
     camp: string|null; // 城市所属阵营
-    levelToIncome = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];
-    // 收入和level挂钩
-
-
-   
+    levelToIncome = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];// 暂时没用
 
     //创建constructor
     constructor(cityName: string, type: string, level: number, resources: number, population?: number,image:string|null=null,
@@ -126,7 +122,15 @@ export class Hexagon {
         return result;
     }
 
-
+    // 输入: 行和列
+    // 输出: 六边形的x和y坐标
+    static getHexPosition(row: number, col: number, size: number): { x: number; y: number } {
+        const width = 2 * size; // 六边形宽度
+        const height = Math.sqrt(3) * size; // 六边形高度
+        const x = col * width * 3 / 4;
+        const y = row * height + (col % 2) * height / 2;
+        return { x, y };
+    }
     
 
     // 获取六边形的顶点坐标
