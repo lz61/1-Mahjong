@@ -655,6 +655,7 @@ export class HexMapComponent implements OnInit {
 
     // 部署敌方兵种
     this.initAICamp(10,10);
+    
 
     // 部署我方兵种(目前为默认部署,2骑兵)
     this.initPlayerCamp(10,10);

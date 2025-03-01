@@ -30,7 +30,7 @@ export class Unit {
         hasMoved: boolean = false,
         hasAttacked: boolean = false,
         attackBoost: number = 0,
-        healthBoost: number = 0) {
+        healthBoost: number = 0,) {
         this.movementSpeed = movementSpeed;
         this.image = image;
         this.health = Math.floor(health); 
@@ -43,7 +43,7 @@ export class Unit {
         this.attackBoost = attackBoost;
         this.healthBoost = healthBoost;
     }
-
+    //移动速度，图片链接，血量上限，血量下限，阵营，攻击上限，攻击下限，反击概率,攻击范围（没写默认是1）
     // 创建正常的骑兵对象
     static createNormalCavalry(camp:string = this.playerCamp): Unit {
         return new Unit(3, "assets/Car.png",
@@ -57,6 +57,28 @@ export class Unit {
             2, "assets/Infantry.png",
             (100*boost), (100*boost), camp, 10*boost, 5*boost, 0.3,1);
     }
+    //创造正常的坦克对象
+    static createNormalTank(camp:string,):Unit{
+        return new Unit(4,"assets/Tank.png",200,200,camp,10,0.9,0.8
+
+        )
+    }
+    //创建重型坦克对象
+    static createNormalOverweightTank(camp:string):Unit{
+        return new Unit(
+            3,"assets/OverweightTank.png",150,150,camp,30,30,0.7,0.6
+        )
+    }
+ 
+
+
+
+
+
+
+
+
+
 
     // 反击逻辑
     counterAttack(): number {
