@@ -52,9 +52,9 @@ export class HexMapComponent implements OnInit {
     const col = this.mapHeight / (this.hexSize / 2);
     this.generateHexMap(row, col); // 创建 10x10 的蜂巢
     // 声音
-    const audio = document.getElementById('background-music') as HTMLAudioElement;
-    audio.muted = false; // 取消静音
-    audio.play().catch(error => console.log('Error playing music:', error));
+    // const audio = document.getElementById('background-music') as HTMLAudioElement;
+    // audio.muted = false; // 取消静音
+    // audio.play().catch(error => console.log('Error playing music:', error));
 
     // 在开始战斗时,弹出对话框,显示:
     // 战斗回合数
@@ -409,24 +409,39 @@ export class HexMapComponent implements OnInit {
     return null;
   }
 
+  // getHexagonFromRowAndCol
+  getHexagonFromRowAndCol(row: number, col: number): Hexagon | null {
+    return this.getHexagon(row * 2 * this.hexSize * 3 / 2 + this.hexSize * 3 / 2,
+      col * (Math.sqrt(3) * this.hexSize) + (Math.sqrt(3) * this.hexSize) / 2);
+  }
+
   // 最好是通过存档文件初始化,现在有点sb
   // 读取小关与大关的数据,boost=(大关-1)*0.1+(小关-1)*0.07+1
   // boss战会很难打
   initAICamp(rows: number, cols: number): void {
     var boost = (this.bigRound-1)*0.1 + (this.littleRound-1)*0.07+1;
     var unit = null;
+    // 读取文件内容:
+
+
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
         if(row == 4 && col == 1){
           unit = Unit.createNormalInfantry(Unit.aiCamp,boost);
-          var hexagon = this.getHexagon(row * 2 * this.hexSize * 3 / 2 + this.hexSize*3/2, col * (Math.sqrt(3) * this.hexSize) +(Math.sqrt(3) * this.hexSize)/2);
+          var hexagon = this.getHexagonFromRowAndCol(row,col);
           if(hexagon !== null)
             hexagon.unit = unit;
         }
         if(row == 5 && col == 1){
           unit = Unit.createNormalInfantry(Unit.aiCamp,boost);
-          var hexagon = this.getHexagon(row * 2 * this.hexSize * 3 / 2 + this.hexSize*3/2, col * (Math.sqrt(3) * this.hexSize) +(Math.sqrt(3) * this.hexSize)/2);
+          var hexagon = this.getHexagonFromRowAndCol(row,col);
           if(hexagon !== null)
+            hexagon.unit = unit;
+        }
+        if(row == 6 && col == 2){
+          unit = Unit.createNormalInfantry(Unit.aiCamp, boost);
+          var hexagon = this.getHexagonFromRowAndCol(row,col);
+          if (hexagon !== null)
             hexagon.unit = unit;
         }
           
@@ -440,14 +455,17 @@ export class HexMapComponent implements OnInit {
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
         if (row == 1 && col == 1) {
-          unit = Unit.createNormalCavalry();
-          var hexagon = this.getHexagon(row * 2 * this.hexSize * 3 / 2 + this.hexSize * 3 / 2, col * (Math.sqrt(3) * this.hexSize) + (Math.sqrt(3) * this.hexSize) / 2);
+          // unit = Unit.createNormalCavalry();
+          unit = Unit.createNormalUnit(Unit.playerCamp,'cavalry');
+          var hexagon = this.getHexagon(row * 2 * this.hexSize * 3 / 2 + this.hexSize * 3 / 2, 
+          col * (Math.sqrt(3) * this.hexSize) + (Math.sqrt(3) * this.hexSize) / 2);
           if (hexagon !== null)
             hexagon.unit = unit;
         }
         if (row == 3 && col == 6) {
-          unit = Unit.createNormalCavalry();
-          var hexagon = this.getHexagon(row * 2 * this.hexSize * 3 / 2 + this.hexSize * 3 / 2, col * (Math.sqrt(3) * this.hexSize) + (Math.sqrt(3) * this.hexSize) / 2);
+          unit = Unit.createNormalUnit(Unit.playerCamp,'cavalry');
+          var hexagon = this.getHexagon(row * 2 * this.hexSize * 3 / 2 + this.hexSize * 3 / 2, 
+          col * (Math.sqrt(3) * this.hexSize) + (Math.sqrt(3) * this.hexSize) / 2);
           if (hexagon !== null)
             hexagon.unit = unit;
         }
@@ -455,6 +473,8 @@ export class HexMapComponent implements OnInit {
       }
     }
   }
+
+  
 
   rowAndColToXY(row:number, col:number): {x:number,y:number}{
     const hexWidth = 2* this.hexSize; // 六边形的宽度

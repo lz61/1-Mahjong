@@ -29,23 +29,20 @@ export class Unit {
         attackRange: number = 1,
         hasMoved: boolean = false,
         hasAttacked: boolean = false,
-        attackBoost: number = 0,
-        healthBoost: number = 0,) {
+        boost :number = 1) {
         this.movementSpeed = movementSpeed;
         this.image = image;
-        this.health = Math.floor(health); 
-        this.maxHealth = Math.floor(maxHealth); 
+        this.health = Math.floor(health) * boost; 
+        this.maxHealth = Math.floor(maxHealth) * boost; 
         this.camp = camp; 
-        this.attackUpperLimit = attackUpper;
-        this.attackLowerLimit = attackLower;
+        this.attackUpperLimit = attackUpper * boost;
+        this.attackLowerLimit = attackLower * boost;
         this.counterAttackChance = counterAttackChance;
         this.attackRange = attackRange;
-        this.attackBoost = attackBoost;
-        this.healthBoost = healthBoost;
     }
     //移动速度，图片链接，血量上限，血量下限，阵营，攻击上限，攻击下限，反击概率,攻击范围（没写默认是1）
     // 创建正常的骑兵对象
-    static createNormalCavalry(camp:string = this.playerCamp): Unit {
+    static createNormalCavalry(camp:string,boost:number=1): Unit {
         return new Unit(3, "assets/Car.png",
             100, 100, camp, 10, 5, 0.3);
     }
@@ -55,7 +52,17 @@ export class Unit {
         // Infantry move speed: 2
         return new Unit(
             2, "assets/Infantry.png",
-            (100*boost), (100*boost), camp, 10*boost, 5*boost, 0.3,1);
+            100, 100, camp, 10, 5, 0.3,1,false,false,boost);
+    }
+
+    static createNormalUnit(camp:string,unitType:string,boost:number =1): Unit| null {
+        if(unitType == 'cavalry'){
+            return this.createNormalCavalry(camp,boost);
+        }else if(unitType == 'infantry'){
+            return this.createNormalInfantry(camp,boost);
+        }else{
+            return null;
+        }
     }
     //创造正常的坦克对象
     static createNormalTank(camp:string,):Unit{

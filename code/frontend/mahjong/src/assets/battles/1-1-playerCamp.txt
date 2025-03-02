@@ -1,0 +1,2 @@
+1 1 cavalry
+3 6 cavalry
