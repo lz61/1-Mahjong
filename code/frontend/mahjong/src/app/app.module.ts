@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { HttpClientModule } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
 import { ReactiveFormsModule } from '@angular/forms';  // 导入 ReactiveFormsModule
@@ -48,6 +49,7 @@ import { BattleLoseComponent } from './wargame/battle-lose/battle-lose.component
     MatIconModule,
     MatListModule,
     MatDialogModule,
+    HttpClientModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

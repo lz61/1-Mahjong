@@ -25,10 +25,10 @@ function guderianSkill(dict?:Map<string,any>){
     // 拿出所有的units
     var units:Unit[] = dict?.get("units");
     for(let unit of units){
-        unit.attackLowerLimit+=100;
-        unit.attackUpperLimit+=100;
+        unit.attackLowerLimit+=1;
+        unit.attackUpperLimit+=1;
     }
-    console.log('使用技能：闪电战');
+    // console.log('使用技能：闪电战');
 }
 
 // guderian.useSkill();

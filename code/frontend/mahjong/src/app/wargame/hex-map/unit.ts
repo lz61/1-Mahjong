@@ -1,3 +1,5 @@
+import { booleanAttribute } from "@angular/core";
+
 export class Unit {
     movementSpeed: number; // 行动力（可以移动的格子数）
     // 攻击范围: 1格
@@ -40,7 +42,15 @@ export class Unit {
         this.counterAttackChance = counterAttackChance;
         this.attackRange = attackRange;
     }
-    //移动速度，图片链接，血量上限，血量下限，阵营，攻击上限，攻击下限，反击概率,攻击范围（没写默认是1）
+
+    boost(boost: number): void {
+        this.health *= boost;
+        this.maxHealth *= boost;
+        this.attackUpperLimit *= boost;
+        this.attackLowerLimit *= boost;
+    }
+
+    //移动速度，图片链接，当前血量，血量上限，阵营，攻击上限，攻击下限，反击概率,攻击范围（没写默认是1）
     // 创建正常的骑兵对象
     static createNormalCavalry(camp:string,boost:number=1): Unit {
         return new Unit(3, "assets/Car.png",
@@ -55,37 +65,20 @@ export class Unit {
             100, 100, camp, 10, 5, 0.3,1,false,false,boost);
     }
 
-    static createNormalUnit(camp:string,unitType:string,boost:number =1): Unit| null {
-        if(unitType == 'cavalry'){
-            return this.createNormalCavalry(camp,boost);
-        }else if(unitType == 'infantry'){
-            return this.createNormalInfantry(camp,boost);
-        }else{
-            return null;
-        }
-    }
-    //创造正常的坦克对象
-    static createNormalTank(camp:string,):Unit{
-        return new Unit(4,"assets/Tank.png",200,200,camp,10,0.9,0.8
 
+
+
+    //创造正常的坦克对象
+    static createNormalTank(camp:string,boost:number=1):Unit{
+        return new Unit(4,"assets/Tank.png",200,200,camp,10,0.9,0.8,1,false,false,boost
         )
     }
     //创建重型坦克对象
-    static createNormalOverweightTank(camp:string):Unit{
+    static createNormalOverweightTank(camp:string,boost:number=1):Unit{
         return new Unit(
-            3,"assets/OverweightTank.png",150,150,camp,30,30,0.7,0.6
+            3,"assets/OverweightTank.png",1150,1150,camp,100,10,0.6,1,false,false,boost
         )
     }
- 
-
-
-
-
-
-
-
-
-
 
     // 反击逻辑
     counterAttack(): number {
@@ -97,7 +90,7 @@ export class Unit {
             console.log(
                 `Unit performed a counterattack! Damage: ${Math.floor(damage * 5)}`
             );
-            return Math.floor(damage * 5);
+            return Math.floor(damage);
         }
         return 0; // 如果未触发反击，返回 0
     }
@@ -122,6 +115,7 @@ export class Unit {
             return 0; // 如果已攻击过，则不能再次攻击
         }
         this.hasAttacked = true; // 标记已攻击
+        console.log("Unit attackUpperLimit: " + this.attackUpperLimit + " attackLowerLimit: " + this.attackLowerLimit);
         const damage =
             Math.random() * (this.attackUpperLimit - this.attackLowerLimit) +
             this.attackLowerLimit;
@@ -142,6 +136,22 @@ export class Unit {
     resetAction(): void {
         this.hasMoved = false;
         this.hasAttacked = false;
+    }
+
+    static createNormalUnit(camp: string, unitType: string, boost: number = 1): Unit | null {
+        switch (unitType) {
+            case 'tank':
+                return this.createNormalTank(camp);
+            case 'overweightTank':
+                return this.createNormalOverweightTank(camp);
+            case 'cavalry':
+                return this.createNormalCavalry(camp, boost);
+            case 'infantry':
+            case 'Infantry':
+                return this.createNormalInfantry(camp, boost);
+            default:
+                return null;
+        }
     }
 
 

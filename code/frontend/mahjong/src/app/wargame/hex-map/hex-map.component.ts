@@ -4,6 +4,7 @@ import { Unit } from './unit';
 import { MatDialog } from '@angular/material/dialog';
 import { BattleDialogComponent } from '../battle-dialog/battle-dialog.component';
 import { guderian } from './general';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-hex-map',
@@ -105,7 +106,7 @@ export class HexMapComponent implements OnInit {
     this.hoveredGeneral = null;
   }
 
-  constructor(private dialog: MatDialog) { }
+  constructor(private dialog: MatDialog,private http: HttpClient) { }
 
   updatePlayerMoney(amount: number): void {
     this.playerMoney += amount;
@@ -139,11 +140,11 @@ export class HexMapComponent implements OnInit {
   }
 
   getPlayerUnits():Unit[]{
-    var hexList = this.hexagons.filter((hex) => hex.unit && hex.unit.camp === Unit.playerCamp)
     var unitList:Unit[] = [];
-    for(let hex of hexList){
-      if(hex.unit)
+    for (const hex of this.hexagons) {
+      if (hex.unit && hex.unit.camp === Unit.playerCamp) {
         unitList.push(hex.unit);
+      }
     }
     return unitList;
   }
@@ -378,8 +379,9 @@ export class HexMapComponent implements OnInit {
   }
 
   isReachable(hex: Hexagon,hex2: Hexagon,distance: number): boolean {
+    // var n = distance / this.hexSize;
     const distanceHex = Math.sqrt(Math.pow(hex.x - hex2.x, 2) + Math.pow(hex.y - hex2.y, 2));
-    return distanceHex <= distance * this.hexSize*2;
+    return distanceHex <= distance * this.hexSize * 2;
   }
 
   // 画圆,遍历所有六边形,判断是否在圆内
@@ -422,59 +424,94 @@ export class HexMapComponent implements OnInit {
     var boost = (this.bigRound-1)*0.1 + (this.littleRound-1)*0.07+1;
     var unit = null;
     // 读取文件内容:
-
-
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        if(row == 4 && col == 1){
-          unit = Unit.createNormalInfantry(Unit.aiCamp,boost);
-          var hexagon = this.getHexagonFromRowAndCol(row,col);
-          if(hexagon !== null)
-            hexagon.unit = unit;
-        }
-        if(row == 5 && col == 1){
-          unit = Unit.createNormalInfantry(Unit.aiCamp,boost);
-          var hexagon = this.getHexagonFromRowAndCol(row,col);
-          if(hexagon !== null)
-            hexagon.unit = unit;
-        }
-        if(row == 6 && col == 2){
-          unit = Unit.createNormalInfantry(Unit.aiCamp, boost);
-          var hexagon = this.getHexagonFromRowAndCol(row,col);
+    var aiPath = "assets/battles/" + this.bigRound + "-" + this.littleRound + "-aiCamp.txt";
+    // read things out of playerPath
+    // 发起 HTTP 请求读取文件内容
+    this.http.get(aiPath, { responseType: 'text' }).subscribe(
+      (data) => {
+        // 成功读取文件内容后的处理逻辑
+        // console.log('文件内容:', data);
+        // 这里可以根据文件内容进行阵营部署的具体操作，例如解析数据、分配角色等
+        // arr: 多行数组,每个数组存放: row,col,unitType
+        var arr = this.processCampData(data, rows, cols);
+        // console.log('arr:', arr);
+        for (let i = 0; i < arr.length; i++) {
+          var row = arr[i][0];
+          var col = arr[i][1];
+          var unitType = arr[i][2];
+          // console.log('row:', row, 'col:', col, 'unitType:', unitType);
+          var unit = Unit.createNormalUnit(Unit.aiCamp, unitType);
+          // console.log('unit:', unit);
+          var hexagon = this.getHexagonFromRowAndCol(row, col);
           if (hexagon !== null)
             hexagon.unit = unit;
         }
+      },
+      (error) => {
+        // 处理请求失败的情况
+        console.error('读取文件时出错:', error);
+      }
+    );   
+
+
+    // for (let row = 0; row < rows; row++) {
+    //   for (let col = 0; col < cols; col++) {
+    //     if(row == 4 && col == 1){
+    //       unit = Unit.createNormalInfantry(Unit.aiCamp,boost);
+    //       var hexagon = this.getHexagonFromRowAndCol(row,col);
+    //       if(hexagon !== null)
+    //         hexagon.unit = unit;
+    //     }
+    //     if(row == 5 && col == 1){
+    //       unit = Unit.createNormalInfantry(Unit.aiCamp,boost);
+    //       var hexagon = this.getHexagonFromRowAndCol(row,col);
+    //       if(hexagon !== null)
+    //         hexagon.unit = unit;
+    //     }
+    //     if(row == 6 && col == 2){
+    //       unit = Unit.createNormalInfantry(Unit.aiCamp, boost);
+    //       var hexagon = this.getHexagonFromRowAndCol(row,col);
+    //       if (hexagon !== null)
+    //         hexagon.unit = unit;
+    //     }
           
-      }
-    }
+    //   }
+    // }
   }
 
-  // 部署我方阵营(以后应该改成玩家自选)
+  // 部署我方阵营(以后应该改成玩家自选,玩家可自定义兵种位置)
   initPlayerCamp(rows: number, cols: number): void {
-    var unit = null;
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        if (row == 1 && col == 1) {
-          // unit = Unit.createNormalCavalry();
-          unit = Unit.createNormalUnit(Unit.playerCamp,'cavalry');
-          var hexagon = this.getHexagon(row * 2 * this.hexSize * 3 / 2 + this.hexSize * 3 / 2, 
-          col * (Math.sqrt(3) * this.hexSize) + (Math.sqrt(3) * this.hexSize) / 2);
-          if (hexagon !== null)
+    // 读取配置文件中的内容
+    // 配置文件路径: "assets/battles/[bigRound]-[littleRound]-playerCamp.txt"
+    // 与json文件格式不一致
+    var playerPath = "assets/battles/"+this.bigRound+"-"+this.littleRound+"-playerCamp.txt";
+    // read things out of playerPath
+    // 发起 HTTP 请求读取文件内容
+    this.http.get(playerPath, { responseType: 'text' }).subscribe(
+      (data) => {
+        // 成功读取文件内容后的处理逻辑
+        // console.log('文件内容:', data);
+        // 这里可以根据文件内容进行阵营部署的具体操作，例如解析数据、分配角色等
+        // arr: 多行数组,每个数组存放: row,col,unitType
+        var arr = this.processCampData(data, rows, cols);
+        // console.log('arr:', arr);
+        for(let i = 0; i < arr.length; i++){
+          var row = arr[i][0];
+          var col = arr[i][1];
+          var unitType = arr[i][2];
+          // console.log('row:', row, 'col:', col, 'unitType:', unitType);
+          var unit = Unit.createNormalUnit(Unit.playerCamp,unitType);
+          var hexagon = this.getHexagonFromRowAndCol(row,col);
+          if(hexagon !== null)
             hexagon.unit = unit;
         }
-        if (row == 3 && col == 6) {
-          unit = Unit.createNormalUnit(Unit.playerCamp,'cavalry');
-          var hexagon = this.getHexagon(row * 2 * this.hexSize * 3 / 2 + this.hexSize * 3 / 2, 
-          col * (Math.sqrt(3) * this.hexSize) + (Math.sqrt(3) * this.hexSize) / 2);
-          if (hexagon !== null)
-            hexagon.unit = unit;
-        }
-
+      },
+      (error) => {
+        // 处理请求失败的情况
+        console.error('读取文件时出错:', error);
       }
-    }
+    );   
   }
-
-  
 
   rowAndColToXY(row:number, col:number): {x:number,y:number}{
     const hexWidth = 2* this.hexSize; // 六边形的宽度
@@ -795,41 +832,37 @@ export class HexMapComponent implements OnInit {
 
     // 遍历所有玩家单位
     let attacked = false;
-    for (let targetHex of this.hexagons) {
-      if (
-        targetHex.unit &&
-        targetHex.unit.camp === Unit.playerCamp && // 玩家单位
-        this.isReachable(hex, targetHex, hex.unit.movementSpeed) // 判断是否在攻击范围内
-      ) {
-        console.log(
-          `AI 单位 (${hex.x}, ${hex.y}) 攻击玩家单位 (${targetHex.x}, ${targetHex.y})`
-        );
+    var nodes = hex.getNodesInDistance(hex.x, hex.y, this.hexSize, hex.unit.attackRange);
+    for (let node of nodes) {
+      var nodeHex = this.getHexagon(node.x, node.y);
+      if(nodeHex === null || nodeHex.unit === null || nodeHex.unit.camp === Unit.aiCamp) continue;
+      if(nodeHex.unit.camp === Unit.playerCamp){
+        // 攻击:
+      var targetHex = nodeHex;
+      if(targetHex.unit === null) continue;
+      console.log(
+        `AI 单位 (${hex.x}, ${hex.y}) 攻击玩家单位 (${targetHex.x}, ${targetHex.y})`
+      );
 
-        // AI 单位攻击玩家单位
-        const damage = hex.unit.attack(); // 计算攻击伤害
-        targetHex.unit.takeDamage(damage); // 玩家单位承受伤害
+      // AI 单位攻击玩家单位
+      const damage = hex.unit.attack(); // 计算攻击伤害
+      targetHex.unit.takeDamage(damage); // 玩家单位承受伤害
 
-        console.log(
-          `玩家单位 (${targetHex.x}, ${targetHex.y}) 受到 ${damage} 点伤害，剩余血量：${targetHex.unit.health}`
-        );
+      console.log(
+        `玩家单位 (${targetHex.x}, ${targetHex.y}) 受到 ${damage} 点伤害，剩余血量：${targetHex.unit.health}`
+      );
 
-        // 如果玩家单位血量小于等于 0，则移除该单位
-        if (targetHex.unit.health <= 0) {
-          console.log(`玩家单位 (${targetHex.x}, ${targetHex.y}) 被击败并移除。`);
-          targetHex.unit = null;
-        }
+      // 如果玩家单位血量小于等于 0，则移除该单位
+      if (targetHex.unit.health <= 0) {
+        console.log(`玩家单位 (${targetHex.x}, ${targetHex.y}) 被击败并移除。`);
+        targetHex.unit = null;
+      }
 
-        attacked = true; // 标记该 AI 单位已经攻击
-        break; // 每个 AI 单位只能攻击一次，跳出循环
+      attacked = true; // 标记该 AI 单位已经攻击
+      break; // 每个 AI 单位只能攻击一次，跳出循环
+
       }
     }
-
-    // AI单位默认不动,活靶子
-    // if (!attacked) {
-    //   console.log(`AI 单位 (${hex.x}, ${hex.y}) 没有找到可攻击的玩家单位。`);
-    //   // 如果没有找到可以攻击的玩家单位，则随机移动
-    //   this.aiMoveRandom(hex);
-    // }
   }
 
   // 代码有问题
@@ -883,26 +916,17 @@ export class HexMapComponent implements OnInit {
   }
 
   startPlayerTurn(): void {
-    // let playerIncome = 0;
-
-    // // 遍历所有地块，计算当前玩家拥有的城市数量
-    // for (let hex of this.hexagons) {
-    //   if (hex.city && hex.city.camp === this.playerCamp) {
-    //     playerIncome += hex.city.levelToIncome[hex.city.level];
-    //   }
-    // }
-
-
-    // 每个城市为玩家产钱（例如每座城市产 10 金币）
-    // this.playerMoney += playerIncome;
 
     // 每个将军发出技能
     var dict = new Map<string,any>();
     
+    console.log(this.getPlayerUnits())
     dict.set("units", this.getPlayerUnits());
     for(let general of this.generals){
       general.useSkill(dict);
     }
+    // 输出所有玩家兵种的数据
+    console.log('玩家兵种数据:', dict.get("units"));
     this.highlightAvailableUnits();
   }
 
@@ -929,6 +953,26 @@ export class HexMapComponent implements OnInit {
       audio.play().catch(error => console.log('Error playing music:', error));
     }
     this.isMusicPlaying = !this.isMusicPlaying;
+  }
+
+  // 处理从文件中读取到的阵营数据
+  private processCampData(data: string, rows: number, cols: number): any {
+    // console.log('开始处理阵营数据，行数:', rows, '列数:', cols);
+    // 将文件内容按行分割,以windows的格式
+    const lines = data.split('\r\n');
+    // console.log("长度是", lines.length);
+    var allArr = new Array(lines.length);
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line) {
+        const parts = line.split(' ');
+        const row = parseInt(parts[0]);
+        const col = parseInt(parts[1]);
+        const unitType = parts[2];
+        allArr[i] = [row, col, unitType];
+      }
+    }
+    return allArr;
   }
 
 }
