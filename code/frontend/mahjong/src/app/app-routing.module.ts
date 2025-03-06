@@ -10,7 +10,7 @@ import { WargameComponent } from './wargame/wargame.component';
 import { HexMapComponent } from './wargame/hex-map/hex-map.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/game', pathMatch: 'full' },
+  { path: '', redirectTo: '/wargame', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'welcome', component: WelcomeComponent },
   { path: 'game', component: GameComponent,

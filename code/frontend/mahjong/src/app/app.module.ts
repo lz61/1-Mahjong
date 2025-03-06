@@ -18,6 +18,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInput, MatInputModule } from '@angular/material/input';
 import { WargameComponent } from './wargame/wargame.component';
 import { HexMapComponent } from './wargame/hex-map/hex-map.component';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -48,6 +50,8 @@ import { BattleLoseComponent } from './wargame/battle-lose/battle-lose.component
     MatButtonModule,
     MatIconModule,
     MatListModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatDialogModule,
     HttpClientModule,
   ],

@@ -3,7 +3,7 @@ import { City, Hexagon } from './hexagon';
 import { Unit } from './unit';
 import { MatDialog } from '@angular/material/dialog';
 import { BattleDialogComponent } from '../battle-dialog/battle-dialog.component';
-import { guderian } from './general';
+import { general, guderian } from './general';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
@@ -23,7 +23,7 @@ export class HexMapComponent implements OnInit {
   currentTurn: 'player' | 'ai' = 'player'; // 当前回合，默认为玩家回合
   playerCamp = Unit.playerCamp;
   aiCamp = Unit.aiCamp;
-  playerMoney: number = 5;
+  playerMoney: number = 0;
   playerCampColor = 'black';
   aiCampColor = 'white';
   mapWidthMagFac = 0.8;
@@ -32,22 +32,55 @@ export class HexMapComponent implements OnInit {
   bigRound = 1;
   turnCount = 1;
   totalTurnCount = 5;
-
-  generals = [
+  // for test
+  inGame= true;
+  inShop = false;
+  // 自行设计将领价格
+  generalPurchase = "5元";
+  allGenerals = [
     guderian,
-  //   { name: 'rommel', image: 'assets/generals/rommel.png',
-  // skillDescription: 'Tank add 3 attack at first turn' },
-  //   {
-  //     name: 'manstein', image: 'assets/generals/manstein.png',
-  //     skillDescription: 'Tank add 10 attack at last turn'
-  //   },
+    guderian,
+    guderian
+    //   { name: 'rommel', image: 'assets/generals/rommel.png',
+    // skillDescription: 'Tank add 3 attack at first turn' },
+    //   {
+    //     name: 'manstein', image: 'assets/generals/manstein.png',
+    //     skillDescription: 'Tank add 10 attack at last turn'
+    //   },
   ];
+
+  playerGenerals:general[] = [
+    guderian
+  ];
+
+
+  forTest(){
+    this.inGame=false;
+    this.inShop=true;
+  }
+
+  purchaseGeneral(){
+    // console.log("购买将领");
+    this.generalPurchase="已购买";
+    this.playerMoney -= 5;
+  }
+
+  endPurchase(){
+    // 进入下一关
+    this.inShop=false;
+    this.inGame=true;
+  }
+
+
+
   tellThingsAboutGame(){
     console.log("正在施工中......"); 
   }
   // 控制侧边栏的开关
   isSidebarOpen = true;
   ngOnInit(): void {
+    // 测试用代码
+    this.forTest();
     this.updateMapSize(); // 初始化时更新地图大小
     const row = this.mapWidth / (this.hexSize);
     const col = this.mapHeight / (this.hexSize / 2);
@@ -164,6 +197,10 @@ export class HexMapComponent implements OnInit {
 
 
   onHexClick(hex: Hexagon): void {
+    if(this.inShop){
+      alert("请在商店购买将领或单位,结束购买后进入关卡");
+      return;
+    }
     // 如果当前回合为 AI 回合，则不允许玩家操作
     // 如果不是玩家回合，禁止操作
     if (this.currentTurn !== 'player') {
@@ -452,31 +489,6 @@ export class HexMapComponent implements OnInit {
         console.error('读取文件时出错:', error);
       }
     );   
-
-
-    // for (let row = 0; row < rows; row++) {
-    //   for (let col = 0; col < cols; col++) {
-    //     if(row == 4 && col == 1){
-    //       unit = Unit.createNormalInfantry(Unit.aiCamp,boost);
-    //       var hexagon = this.getHexagonFromRowAndCol(row,col);
-    //       if(hexagon !== null)
-    //         hexagon.unit = unit;
-    //     }
-    //     if(row == 5 && col == 1){
-    //       unit = Unit.createNormalInfantry(Unit.aiCamp,boost);
-    //       var hexagon = this.getHexagonFromRowAndCol(row,col);
-    //       if(hexagon !== null)
-    //         hexagon.unit = unit;
-    //     }
-    //     if(row == 6 && col == 2){
-    //       unit = Unit.createNormalInfantry(Unit.aiCamp, boost);
-    //       var hexagon = this.getHexagonFromRowAndCol(row,col);
-    //       if (hexagon !== null)
-    //         hexagon.unit = unit;
-    //     }
-          
-    //   }
-    // }
   }
 
   // 部署我方阵营(以后应该改成玩家自选,玩家可自定义兵种位置)
@@ -709,16 +721,18 @@ export class HexMapComponent implements OnInit {
     for (let hexagon of this.hexagons) {
       hexagon.unit = null;
     }
+    this.playerMoney += (this.littleRound * 100 + this.bigRound * 300);
 
     // 部署敌方兵种
     this.initAICamp(10,10);
-    
 
     // 部署我方兵种(目前为默认部署,2骑兵)
     this.initPlayerCamp(10,10);
 
-    // 重新开始游戏
-    // window.location.reload();
+    // 进入商店
+    this.inGame = false;
+    this.inShop = true;
+
   }
 
   judgePlayerAllWin():Boolean{
@@ -922,7 +936,7 @@ export class HexMapComponent implements OnInit {
     
     console.log(this.getPlayerUnits())
     dict.set("units", this.getPlayerUnits());
-    for(let general of this.generals){
+    for(let general of this.allGenerals){
       general.useSkill(dict);
     }
     // 输出所有玩家兵种的数据

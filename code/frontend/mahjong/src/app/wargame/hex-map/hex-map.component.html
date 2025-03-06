@@ -37,11 +37,17 @@
     </div>
 </div>
 
-<!-- 将领,顶层栏 -->
-<div
-    style="position: fixed; top: 0; left: 0; right: 0; background-color: #f4f4f4; border-bottom: 2px solid #ccc; padding: 4px;">
-    <div style="display: flex; align-items: center; justify-content: center; gap: 10%;">
-        <div *ngFor="let general of generals" style="text-align: center;">
+
+<div>
+    <!-- 将领,顶层栏 -->
+    <div *ngIf="inGame" style="display: flex; align-items: center; justify-content: center; gap: 10%;">
+        <div style="justify-content: flex-start;">
+            <span>
+                <mat-icon matPrefix>attach_money </mat-icon>
+                <div>: {{playerMoney}}</div>
+            </span>
+        </div>
+        <div *ngFor="let general of playerGenerals" style="text-align: center;">
             <img [src]="general.image" alt="{{ general.name }}"
                 style="width: 50px; height: 45px; border-radius: 50%; cursor: pointer;"
                 (mouseenter)="showGeneralSkill(general,$event)"
@@ -55,6 +61,33 @@
             </div>
         </div>
     </div>
+    <!-- 商店,顶层栏 -->
+    <div *ngIf="inShop">
+        <!-- 将领,顶层栏 -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10%;">
+            <div style="display: flex; align-items: center;">
+                    <mat-icon matPrefix>attach_money </mat-icon>
+                    <div>: {{playerMoney}}</div>
+                
+            </div>
+            <button mat-raised-button style="float: left; justify-content: flex-start;" color="primary">商店</button>
+            
+            <div style="justify-content: flex-start;">
+            </div>
+            <div *ngFor="let general of allGenerals" style="display: flex; flex-direction: column; align-items: center;">
+                <img [src]="general.image" alt="{{ general.name }}"
+                    style="width: 50px; height: 45px; border-radius: 50%; cursor: pointer;"
+                    (mouseenter)="showGeneralSkill(general,$event)" (mouseleave)="hideGeneralSkill()" />
+                <div style="font-size: 10px; font-weight: bold; ">
+                    {{ general.skillDescription }}
+                </div>
+                <button mat-raised-button style="float: right;align-self: center; " (click)="purchaseGeneral()">{{generalPurchase}}</button>
+            </div>
+            <button mat-raised-button style="float: right; " (click)="endPurchase()">结束购买</button>
+        </div>
+        
+    </div>
+
 </div>
 
 <!-- 限制六边形地图的大小 -->
